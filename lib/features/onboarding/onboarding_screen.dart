@@ -8,6 +8,7 @@ import 'package:meals_app/core/routing/app_routes.dart';
 import 'package:meals_app/core/styles/app_colors.dart';
 import 'package:meals_app/core/styles/app_text_styles.dart';
 import 'package:meals_app/core/widgets/spacing_widgets.dart';
+import 'package:meals_app/features/onboarding/on_boarding_sevices/on_boarding_services.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -31,6 +32,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   int currentIndex = 0;
 
   CarouselSliderController carouselController = CarouselSliderController();
+
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      bool isFirstTime = OnBoardingServices.isFirstTime();
+      OnBoardingServices.setFirstTimeWithFalse();
+      if (isFirstTime == false) {
+        context.pushReplacementNamed(AppRoutes.homeScreen);
+      }
+    });
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +146,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   currentIndex >= 2
                       ? InkWell(
                         onTap: () {
-                          GoRouter.of(context).pushReplacement(AppRoutes.homeScreen);
+                          if (mounted) {
+                            GoRouter.of(context).pushReplacement(AppRoutes.homeScreen);
+                          }
                         },
                         child: Container(
                           width: 62.sp,
@@ -154,20 +170,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         children: [
                           InkWell(
                             onTap: () {
-                              GoRouter.of(context).pushReplacement(AppRoutes.homeScreen);
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (mounted) {
+                                  GoRouter.of(
+                                    context,
+                                  ).pushReplacement(AppRoutes.homeScreen);
+                                }
+                              });
                             },
                             child: Text('Skip', style: AppTextStyles.white14SemiBold),
                           ),
                           InkWell(
                             onTap: () {
-                              if (currentIndex < 2) {
+                              if (currentIndex < titles.length - 1) {
                                 currentIndex++;
-                                carouselController.animateToPage(currentIndex);
+                                carouselController.nextPage(); //
                                 setState(() {});
                               }
                             },
                             child: Text('Next', style: AppTextStyles.white14SemiBold),
                           ),
+
                         ],
                       ),
                 ],
@@ -179,3 +202,4 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 }
+
