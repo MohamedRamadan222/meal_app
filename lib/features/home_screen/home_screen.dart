@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:meals_app/core/app_assets/app_assets.dart';
+import 'package:go_router/go_router.dart';
+import 'package:meals_app/core/routing/app_routes.dart';
 import 'package:meals_app/core/styles/app_colors.dart';
 import 'package:meals_app/core/styles/app_text_styles.dart';
 import 'package:meals_app/core/widgets/spacing_widgets.dart';
 import 'package:meals_app/features/home_screen/widgets/custom_food_item_widget.dart';
 import 'package:meals_app/features/home_screen/widgets/custom_top_home_part.dart';
+import 'data/db_helper/db_helper.dart';
+import 'data/models/meal_model.dart';
+
+DatabaseHelper dbHelper = DatabaseHelper.instance;
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -31,22 +36,51 @@ class HomeScreen extends StatelessWidget {
                     ),
                     const HeightSpace(25),
                     Expanded(
-                      child: GridView.builder(
-                        itemCount: 30,
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 22.sp,
-                          crossAxisSpacing: 16.sp,
-                          childAspectRatio: 0.9,
-                        ),
-                        itemBuilder: (context, index) {
-                          return CustomFoodItemWidget(
-                            imageUrl: AppAssets.foodExampleImage,
-                            name: 'Cheese Burger',
-                            rate: 4.5,
-                            time: '5-4',
-                            onTap: () {},
-                          );
+                      child: FutureBuilder(
+                        future: dbHelper.getMeals(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const Center(
+                              child: CircularProgressIndicator(
+                                color: AppColors.primaryColor,
+                              ),
+                            );
+                          } else if (snapshot.hasData) {
+                            if (snapshot.data!.isEmpty) {
+                              return Center(
+                                child: Text(
+                                  'No Meals Found',
+                                  style: AppTextStyles.black16Medium,
+                                ),
+                              );
+                            }
+                            return GridView.builder(
+                              itemCount: snapshot.data!.length,
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                mainAxisSpacing: 22.sp,
+                                crossAxisSpacing: 16.sp,
+                                childAspectRatio: 0.9,
+                              ),
+                              itemBuilder: (context, index) {
+                                Meal meal = snapshot.data![index];
+                                return CustomFoodItemWidget(
+                                  imageUrl: meal.imageUrl,
+                                  name: meal.name,
+                                  rate: meal.rate,
+                                  time: meal.time,
+                                  onTap: () {
+                                    GoRouter.of(
+                                      context,
+                                    ).pushNamed(AppRoutes.mealDitalesScreen, extra: meal);
+                                  },
+                                );
+                              },
+                            );
+                          } else if (snapshot.hasError) {
+                            return Center(child: Text('${snapshot.error}'));
+                          }
+                          return Container();
                         },
                       ),
                     ),
@@ -59,10 +93,10 @@ class HomeScreen extends StatelessWidget {
         floatingActionButton: FloatingActionButton(
           shape: const CircleBorder(),
           backgroundColor: AppColors.primaryColor,
-          child: Icon(Icons.add, color: AppColors.whiteColor,
-            size: 30.sp ,
-          ),
-          onPressed: () {},
+          child: Icon(Icons.add, color: AppColors.whiteColor, size: 30.sp),
+          onPressed: () {
+            GoRouter.of(context).pushNamed(AppRoutes.addMealScreen);
+          },
         ),
       ),
     );

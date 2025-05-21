@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -11,6 +9,8 @@ class CustomTextField extends StatelessWidget {
   final double? width;
   final bool? isPassword;
   final TextEditingController? controller;
+  final TextInputType? keyboardType;
+  final int? maxLines;
   final String? Function(String?)? validator;
   final bool? obscureText;
 
@@ -23,6 +23,8 @@ class CustomTextField extends StatelessWidget {
     this.controller,
     this.validator,
     this.obscureText,
+    this.keyboardType,
+    this.maxLines,
   });
 
   @override
@@ -32,9 +34,11 @@ class CustomTextField extends StatelessWidget {
       child: TextFormField(
         controller: controller,
         validator: validator,
+        maxLines: maxLines ?? 1,
         autofocus: false,
         obscureText: obscureText ?? false,
         cursorColor: AppColors.primaryColor,
+        keyboardType: keyboardType ?? TextInputType.text,
         decoration: InputDecoration(
           hintText: hintText ?? '',
           hintStyle: TextStyle(
@@ -42,10 +46,7 @@ class CustomTextField extends StatelessWidget {
             color: const Color(0xff8391A1),
             fontWeight: FontWeight.w500,
           ),
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: 18.w,
-            vertical: 18.h,
-          ),
+          contentPadding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 18.h),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8.r),
             borderSide: BorderSide(color: const Color(0xffE8ECF4), width: 1),
@@ -63,7 +64,7 @@ class CustomTextField extends StatelessWidget {
             borderSide: BorderSide(color: Colors.red, width: 1),
           ),
           filled: true,
-          fillColor: Color(0xffF7F8F9),
+          fillColor: Colors.white,
           suffixIcon: suffixIcon,
         ),
       ),
